@@ -3,6 +3,8 @@ import helmet from "helmet";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.routes.js";
+import formRoutes from "./routes/form.routes.js";
+import { csrfMiddleware } from "./middleware/csrf.middleware.js";
 import {
   errorHandler,
   notFoundHandler,
@@ -22,6 +24,17 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
+app.use("/api", (req, res, next) => {
+  const mutatingMethods = ["POST", "PATCH", "PUT", "DELETE"];
+
+  if (mutatingMethods.includes(req.method)) {
+    csrfMiddleware(req, res, next);
+    return;
+  }
+
+  next();
+});
+
 app.get("/api/health", (_req, res) => {
   res.status(200).json({
     success: true,
@@ -30,6 +43,8 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+
+app.use("/api/forms", formRoutes);
 
 app.use(notFoundHandler);
 
