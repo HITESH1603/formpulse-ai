@@ -8,6 +8,7 @@ export type QuestionType =
   | "rating";
 
 export interface IQuestion {
+  _id?: Types.ObjectId;
   label: string;
   type: QuestionType;
   options: string[];

@@ -50,23 +50,38 @@ export const updateForm = async (
 ) => {
   validateFormId(formId);
 
-  const form = await Form.findOneAndUpdate(
-    {
-      _id: formId,
-      owner: userId,
-    },
-    {
-      $set: input,
-    },
-    {
-      new: true,
-      runValidators: true,
-    },
-  );
+  const form = await Form.findOne({
+    _id: formId,
+    owner: userId,
+  });
 
   if (!form) {
     throw new Error("FORM_NOT_FOUND");
   }
+
+  const updateData = { ...input };
+
+  if (input.questions !== undefined) {
+    const existingQuestionIds = new Set(
+      form.questions.map((question) => question._id?.toString()),
+    );
+
+    const updatedQuestions = input.questions.map((question) => {
+      const { id, ...questionData } = question;
+
+      if (id && !existingQuestionIds.has(id)) {
+        throw new Error("INVALID_QUESTION_ID");
+      }
+
+      return id ? { ...questionData, _id: id } : questionData;
+    });
+
+    updateData.questions = updatedQuestions;
+  }
+
+  form.set(updateData);
+
+  await form.save();
 
   return form;
 };
