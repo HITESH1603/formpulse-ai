@@ -14,7 +14,7 @@ build/
 *.log
 npm-debug.log*
 
-e
+
 coverage/
 
 
