@@ -5,6 +5,9 @@ import type {
   LoginInput,
 } from "../validators/auth.validator.js";
 
+
+const dummyPasswordHash = bcrypt.hash("formpulse-dummy-password", 12);
+
 export const registerUser = async (input: RegisterInput) => {
   const email = input.email.trim().toLowerCase();
 
@@ -47,13 +50,12 @@ export const loginUser = async (input: LoginInput) => {
 
   const user = await User.findOne({ email }).select("+password");
 
-  if (!user) {
-    throw new Error("INVALID_CREDENTIALS");
-  }
 
-  const isPasswordValid = await bcrypt.compare(input.password, user.password);
+  const passwordHash = user ? user.password : await dummyPasswordHash;
 
-  if (!isPasswordValid) {
+  const isPasswordValid = await bcrypt.compare(input.password, passwordHash);
+
+  if (!user || !isPasswordValid) {
     throw new Error("INVALID_CREDENTIALS");
   }
 
