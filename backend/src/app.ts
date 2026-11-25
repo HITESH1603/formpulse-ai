@@ -1,5 +1,8 @@
-
 import express from "express";
+import helmet from "helmet";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+
 import {
   errorHandler,
   notFoundHandler,
@@ -7,7 +10,17 @@ import {
 
 const app = express();
 
+app.use(helmet());
+
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+  }),
+);
+
 app.use(express.json());
+app.use(cookieParser());
 
 app.get("/api/health", (_req, res) => {
   res.status(200).json({
@@ -16,10 +29,8 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
-// Handle requests that don't match any route
 app.use(notFoundHandler);
 
-// Handle errors passed to Express
 app.use(errorHandler);
 
 export default app;
