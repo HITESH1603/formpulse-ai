@@ -2,7 +2,7 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-
+import authRoutes from "./routes/auth.routes.js";
 import {
   errorHandler,
   notFoundHandler,
@@ -28,6 +28,8 @@ app.get("/api/health", (_req, res) => {
     message: "FormPulse AI API is running",
   });
 });
+
+app.use("/api/auth", authRoutes);
 
 app.use(notFoundHandler);
 
