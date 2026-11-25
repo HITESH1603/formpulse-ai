@@ -1,14 +1,17 @@
-
+import mongoose from "mongoose";
 import Form from "../models/Form.js";
 import type {
   CreateFormInput,
   UpdateFormInput,
 } from "../validators/form.validator.js";
 
-export const createForm = async (
-  userId: string,
-  input: CreateFormInput
-) => {
+const validateFormId = (formId: string): void => {
+  if (!mongoose.isValidObjectId(formId)) {
+    throw new Error("INVALID_FORM_ID");
+  }
+};
+
+export const createForm = async (userId: string, input: CreateFormInput) => {
   const form = await Form.create({
     ...input,
     owner: userId,
@@ -25,10 +28,9 @@ export const getUserForms = async (userId: string) => {
   return forms;
 };
 
-export const getFormById = async (
-  userId: string,
-  formId: string
-) => {
+export const getFormById = async (userId: string, formId: string) => {
+  validateFormId(formId);
+
   const form = await Form.findOne({
     _id: formId,
     owner: userId,
@@ -44,8 +46,10 @@ export const getFormById = async (
 export const updateForm = async (
   userId: string,
   formId: string,
-  input: UpdateFormInput
+  input: UpdateFormInput,
 ) => {
+  validateFormId(formId);
+
   const form = await Form.findOneAndUpdate(
     {
       _id: formId,
@@ -57,7 +61,7 @@ export const updateForm = async (
     {
       new: true,
       runValidators: true,
-    }
+    },
   );
 
   if (!form) {
@@ -67,10 +71,9 @@ export const updateForm = async (
   return form;
 };
 
-export const deleteForm = async (
-  userId: string,
-  formId: string
-) => {
+export const deleteForm = async (userId: string, formId: string) => {
+  validateFormId(formId);
+
   const form = await Form.findOneAndDelete({
     _id: formId,
     owner: userId,
@@ -79,4 +82,6 @@ export const deleteForm = async (
   if (!form) {
     throw new Error("FORM_NOT_FOUND");
   }
+
+  return form;
 };
