@@ -123,6 +123,8 @@ export const deleteForm = async (userId: string, formId: string) => {
 
   if (!form) throw new Error("FORM_NOT_FOUND");
 
+  await Response.deleteMany({ form: form._id });
+
   return form;
 };
 
