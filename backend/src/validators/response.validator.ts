@@ -1,4 +1,3 @@
-
 import { z } from "zod";
 
 const answerSchema = z
@@ -14,7 +13,10 @@ const answerSchema = z
 
 export const submitResponseSchema = z
   .object({
-    answers: z.array(answerSchema).max(50),
+    answers: z
+      .array(answerSchema)
+      .min(1, "At least one answer is required")
+      .max(50),
   })
   .strict()
   .superRefine((response, ctx) => {
