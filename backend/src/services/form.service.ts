@@ -62,6 +62,10 @@ export const updateForm = async (
   if (input.questions !== undefined) {
     const hasResponses = await Response.exists({ form: form._id });
 
+    if (form.status === "published" && input.questions.length === 0) {
+      throw new Error("PUBLISHED_FORM_REQUIRES_QUESTIONS");
+    }
+
     const existingQuestions = new Map(
       form.questions.map((question) => [question._id?.toString(), question]),
     );

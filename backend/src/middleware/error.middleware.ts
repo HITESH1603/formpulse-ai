@@ -111,6 +111,14 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
       });
       return;
     }
+
+    if (error.message === "PUBLISHED_FORM_REQUIRES_QUESTIONS") {
+      res.status(400).json({
+        success: false,
+        message: "A published form must have at least one question",
+      });
+      return;
+    }
   }
 
   if (
