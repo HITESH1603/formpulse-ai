@@ -5,6 +5,8 @@ import {
   getFormById,
   updateForm,
   deleteForm,
+  publishForm,
+  closeForm,
 } from "../services/form.service.js";
 
 export const createFormController: RequestHandler = async (req, res, next) => {
@@ -79,6 +81,40 @@ export const deleteFormController: RequestHandler = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: "Form deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const publishFormController: RequestHandler = async (req, res, next) => {
+  try {
+    const form = await publishForm(
+      res.locals.userId as string,
+      req.params.id as string,
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Form published successfully",
+      data: form,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const closeFormController: RequestHandler = async (req, res, next) => {
+  try {
+    const form = await closeForm(
+      res.locals.userId as string,
+      req.params.id as string,
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Form closed successfully",
+      data: form,
     });
   } catch (error) {
     next(error);

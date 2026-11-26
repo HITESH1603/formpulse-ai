@@ -31,6 +31,14 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
       });
       return;
     }
+
+    if (error.message === "PUBLIC_FORM_NOT_FOUND") {
+      res.status(404).json({
+        success: false,
+        message: "Form not found",
+      });
+      return;
+    }
   }
 
   if (

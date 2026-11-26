@@ -1,4 +1,5 @@
 import mongoose, { Schema, type Document, Types } from "mongoose";
+import { randomBytes } from "node:crypto";
 
 export type QuestionType =
   | "short_text"
@@ -21,7 +22,8 @@ export interface IForm extends Document {
   title: string;
   description: string;
   questions: IQuestion[];
-  status: "draft" | "published";
+  status: "draft" | "published" | "closed";
+  shareId: string;
 }
 
 const questionSchema = new Schema<IQuestion>({
@@ -83,8 +85,12 @@ const formSchema = new Schema<IForm>(
     },
     status: {
       type: String,
-      enum: ["draft", "published"],
+      enum: ["draft", "published", "closed"],
       default: "draft",
+    },
+    shareId: {
+      type: String,
+      default: () => randomBytes(16).toString("hex"),
     },
   },
   {
@@ -93,6 +99,16 @@ const formSchema = new Schema<IForm>(
 );
 
 formSchema.index({ owner: 1, updatedAt: -1 });
+
+formSchema.index(
+  { shareId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      shareId: { $type: "string" },
+    },
+  },
+);
 
 const Form = mongoose.model<IForm>("Form", formSchema);
 

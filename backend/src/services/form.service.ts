@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Form from "../models/Form.js";
+import { randomBytes } from "node:crypto";
 import type {
   CreateFormInput,
   UpdateFormInput,
@@ -36,9 +37,7 @@ export const getFormById = async (userId: string, formId: string) => {
     owner: userId,
   });
 
-  if (!form) {
-    throw new Error("FORM_NOT_FOUND");
-  }
+  if (!form) throw new Error("FORM_NOT_FOUND");
 
   return form;
 };
@@ -55,9 +54,7 @@ export const updateForm = async (
     owner: userId,
   });
 
-  if (!form) {
-    throw new Error("FORM_NOT_FOUND");
-  }
+  if (!form) throw new Error("FORM_NOT_FOUND");
 
   const updateData = { ...input };
 
@@ -80,7 +77,6 @@ export const updateForm = async (
   }
 
   form.set(updateData);
-
   await form.save();
 
   return form;
@@ -94,9 +90,50 @@ export const deleteForm = async (userId: string, formId: string) => {
     owner: userId,
   });
 
-  if (!form) {
-    throw new Error("FORM_NOT_FOUND");
+  if (!form) throw new Error("FORM_NOT_FOUND");
+
+  return form;
+};
+
+export const publishForm = async (userId: string, formId: string) => {
+  validateFormId(formId);
+
+  const form = await Form.findOne({
+    _id: formId,
+    owner: userId,
+  });
+
+  if (!form) throw new Error("FORM_NOT_FOUND");
+
+  if (form.questions.length === 0) {
+    throw new Error("FORM_CANNOT_BE_PUBLISHED");
   }
+
+  if (!form.shareId) {
+    form.shareId = randomBytes(16).toString("hex");
+  }
+
+  form.status = "published";
+  await form.save();
+  return form;
+};
+
+export const closeForm = async (userId: string, formId: string) => {
+  validateFormId(formId);
+
+  const form = await Form.findOne({
+    _id: formId,
+    owner: userId,
+  });
+
+  if (!form) throw new Error("FORM_NOT_FOUND");
+
+  if (form.status !== "published") {
+    throw new Error("FORM_CANNOT_BE_CLOSED");
+  }
+
+  form.status = "closed";
+  await form.save();
 
   return form;
 };

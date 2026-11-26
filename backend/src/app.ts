@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.routes.js";
 import formRoutes from "./routes/form.routes.js";
+import publicFormRoutes from "./routes/public-form.routes.js";
 import { csrfMiddleware } from "./middleware/csrf.middleware.js";
 import {
   errorHandler,
@@ -45,6 +46,8 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/auth", authRoutes);
 
 app.use("/api/forms", formRoutes);
+
+app.use("/api/public/forms", publicFormRoutes);
 
 app.use(notFoundHandler);
 
