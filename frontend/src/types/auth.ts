@@ -1,0 +1,16 @@
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface AuthResponse {
+  success: boolean;
+  message: string;
+  data: User;
+}
+
+export interface CurrentUserResponse {
+  success: boolean;
+  data: User;
+}
