@@ -17,31 +17,34 @@ export interface IResponse extends Document {
   updatedAt: Date;
 }
 
-const answerSchema = new Schema<IResponseAnswer>({
-  questionId: {
-    type: Schema.Types.ObjectId,
-    required: true,
+const answerSchema = new Schema<IResponseAnswer>(
+  {
+    questionId: {
+      type: Schema.Types.ObjectId,
+      required: true,
+    },
+    questionLabel: {
+      type: String,
+      required: true,
+    },
+    questionType: {
+      type: String,
+      required: true,
+      enum: [
+        "short_text",
+        "long_text",
+        "single_choice",
+        "multiple_choice",
+        "rating",
+      ],
+    },
+    value: {
+      type: Schema.Types.Mixed,
+      required: true,
+    },
   },
-  questionLabel: {
-    type: String,
-    required: true,
-  },
-  questionType: {
-    type: String,
-    required: true,
-    enum: [
-      "short_text",
-      "long_text",
-      "single_choice",
-      "multiple_choice",
-      "rating",
-    ],
-  },
-  value: {
-    type: Schema.Types.Mixed,
-    required: true,
-  },
-});
+  { _id: false },
+);
 
 const responseSchema = new Schema<IResponse>(
   {
