@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Form from "../models/Form.js";
 import { randomBytes } from "node:crypto";
+import Response from "../models/Response.js";
 import type {
   CreateFormInput,
   UpdateFormInput,
@@ -59,14 +60,44 @@ export const updateForm = async (
   const updateData = { ...input };
 
   if (input.questions !== undefined) {
-    const existingQuestionIds = new Set(
-      form.questions.map((question) => question._id?.toString()),
+    const hasResponses = await Response.exists({ form: form._id });
+
+    const existingQuestions = new Map(
+      form.questions.map((question) => [question._id?.toString(), question]),
     );
+
+    if (hasResponses) {
+      if (input.questions.length !== form.questions.length) {
+        throw new Error("FORM_QUESTIONS_LOCKED");
+      }
+
+      for (const question of input.questions) {
+        if (!question.id) {
+          throw new Error("FORM_QUESTIONS_LOCKED");
+        }
+
+        const existingQuestion = existingQuestions.get(question.id);
+
+        if (!existingQuestion) {
+          throw new Error("INVALID_QUESTION_ID");
+        }
+
+        if (
+          question.type !== existingQuestion.type ||
+          question.required !== existingQuestion.required ||
+          question.order !== existingQuestion.order ||
+          JSON.stringify(question.options) !==
+            JSON.stringify(existingQuestion.options)
+        ) {
+          throw new Error("FORM_QUESTIONS_LOCKED");
+        }
+      }
+    }
 
     const updatedQuestions = input.questions.map((question) => {
       const { id, ...questionData } = question;
 
-      if (id && !existingQuestionIds.has(id)) {
+      if (id && !existingQuestions.has(id)) {
         throw new Error("INVALID_QUESTION_ID");
       }
 

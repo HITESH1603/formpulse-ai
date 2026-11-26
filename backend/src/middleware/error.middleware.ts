@@ -55,6 +55,62 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
       });
       return;
     }
+
+    if (error.message === "INVALID_RESPONSE_QUESTION") {
+      res.status(400).json({
+        success: false,
+        message: "Invalid question in response",
+      });
+      return;
+    }
+
+    if (error.message === "INVALID_ANSWER_TYPE") {
+      res.status(400).json({
+        success: false,
+        message: "Answer type does not match the question type",
+      });
+      return;
+    }
+
+    if (error.message === "REQUIRED_QUESTION_MISSING") {
+      res.status(400).json({
+        success: false,
+        message: "A required question is missing or unanswered",
+      });
+      return;
+    }
+
+    if (error.message === "INVALID_CHOICE_OPTION") {
+      res.status(400).json({
+        success: false,
+        message: "Invalid choice option",
+      });
+      return;
+    }
+
+    if (error.message === "DUPLICATE_CHOICE_OPTION") {
+      res.status(400).json({
+        success: false,
+        message: "Duplicate choice options are not allowed",
+      });
+      return;
+    }
+
+    if (error.message === "INVALID_RATING") {
+      res.status(400).json({
+        success: false,
+        message: "Rating must be an integer between 1 and 5",
+      });
+      return;
+    }
+    if (error.message === "FORM_QUESTIONS_LOCKED") {
+      res.status(409).json({
+        success: false,
+        message:
+          "Questions cannot be structurally changed after responses have been submitted",
+      });
+      return;
+    }
   }
 
   if (
