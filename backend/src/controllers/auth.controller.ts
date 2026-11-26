@@ -6,6 +6,9 @@ import { authCookieOptions, clearAuthCookieOptions } from "../utils/cookie.js";
 export const registerController: RequestHandler = async (req, res, next) => {
   try {
     const user = await registerUser(req.body);
+    const token = generateToken(user.id);
+
+    res.cookie("token", token, authCookieOptions);
 
     res.status(201).json({
       success: true,
