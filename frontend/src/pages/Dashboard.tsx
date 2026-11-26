@@ -1,13 +1,35 @@
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
+import { deleteForm, getForms } from "../services/form";
+import type { Form } from "../types/form";
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  const [forms, setForms] = useState<Form[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [deletingFormId, setDeletingFormId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchForms = async () => {
+      try {
+        const data = await getForms();
+        setForms(data);
+      } catch (error) {
+        setError(
+          error instanceof Error ? error.message : "Unable to load forms",
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void fetchForms();
+  }, []);
 
   const handleLogout = async () => {
     setError("");
@@ -17,11 +39,46 @@ const Dashboard = () => {
       await logout();
       navigate("/login", { replace: true });
     } catch (error) {
-      setError(
-        error instanceof Error ? error.message : "Unable to log out",
-      );
+      setError(error instanceof Error ? error.message : "Unable to log out");
     } finally {
       setIsLoggingOut(false);
+    }
+  };
+
+  const handleDelete = async (formId: string) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this form and all its responses?",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setError("");
+    setDeletingFormId(formId);
+
+    try {
+      await deleteForm(formId);
+      setForms((previousForms) =>
+        previousForms.filter((form) => form.id !== formId),
+      );
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "Unable to delete form",
+      );
+    } finally {
+      setDeletingFormId(null);
+    }
+  };
+
+  const getStatusStyle = (status: Form["status"]) => {
+    switch (status) {
+      case "published":
+        return "bg-emerald-500/10 text-emerald-400";
+      case "closed":
+        return "bg-red-500/10 text-red-400";
+      default:
+        return "bg-amber-500/10 text-amber-400";
     }
   };
 
@@ -45,11 +102,18 @@ const Dashboard = () => {
           </button>
         </header>
 
-        <section className="py-10">
-          <h2 className="text-3xl font-bold">
-            Welcome, {user?.name}
-          </h2>
-          <p className="mt-2 text-slate-400">{user?.email}</p>
+        <section className="flex flex-wrap items-center justify-between gap-4 py-10">
+          <div>
+            <h2 className="text-3xl font-bold">Welcome, {user?.name}</h2>
+            <p className="mt-2 text-slate-400">{user?.email}</p>
+          </div>
+
+          <button
+            onClick={() => navigate("/forms/new")}
+            className="rounded-lg bg-indigo-600 px-5 py-3 text-sm font-semibold transition hover:bg-indigo-500"
+          >
+            + Create form
+          </button>
         </section>
 
         {error && (
@@ -58,11 +122,81 @@ const Dashboard = () => {
           </p>
         )}
 
-        <section className="rounded-2xl border border-slate-800 bg-slate-900 p-8">
-          <h3 className="text-xl font-semibold">Your forms</h3>
-          <p className="mt-2 text-slate-400">
-            Your forms will appear here. Form creation is coming next.
-          </p>
+        <section>
+          <div className="mb-5 flex items-center justify-between">
+            <h3 className="text-xl font-semibold">Your forms</h3>
+            <span className="text-sm text-slate-400">
+              {forms.length} {forms.length === 1 ? "form" : "forms"}
+            </span>
+          </div>
+
+          {isLoading ? (
+            <div className="rounded-2xl border border-slate-800 bg-slate-900 p-10 text-center text-slate-400">
+              Loading your forms...
+            </div>
+          ) : forms.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-900 p-10 text-center">
+              <h4 className="text-lg font-semibold">No forms yet</h4>
+              <p className="mt-2 text-sm text-slate-400">
+                Create your first form to start collecting responses.
+              </p>
+              <button
+                onClick={() => navigate("/forms/new")}
+                className="mt-5 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold transition hover:bg-indigo-500"
+              >
+                Create your first form
+              </button>
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2">
+              {forms.map((form) => (
+                <article
+                  key={form.id}
+                  className="rounded-2xl border border-slate-800 bg-slate-900 p-6"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <h4 className="text-lg font-semibold">{form.title}</h4>
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-medium capitalize ${getStatusStyle(form.status)}`}
+                    >
+                      {form.status}
+                    </span>
+                  </div>
+
+                  <p className="mt-2 min-h-10 text-sm text-slate-400">
+                    {form.description || "No description provided."}
+                  </p>
+
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+                    <span>
+                      {form.questions.length}{" "}
+                      {form.questions.length === 1 ? "question" : "questions"}
+                    </span>
+                    <span>
+                      Created {new Date(form.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+
+                  <div className="mt-6 flex gap-3 border-t border-slate-800 pt-4">
+                    <button
+                      onClick={() => navigate(`/forms/${form.id}/edit`)}
+                      className="flex-1 rounded-lg border border-slate-700 px-4 py-2 text-sm font-medium transition hover:bg-slate-800"
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(form.id)}
+                      disabled={deletingFormId === form.id}
+                      className="rounded-lg border border-red-500/30 px-4 py-2 text-sm font-medium text-red-400 transition hover:bg-red-500/10 disabled:opacity-50"
+                    >
+                      {deletingFormId === form.id ? "Deleting..." : "Delete"}
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
         </section>
       </div>
     </main>

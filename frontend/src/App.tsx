@@ -4,6 +4,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import FormBuilder from "./pages/FormBuilder";
 
 function App() {
   return (
@@ -15,6 +16,8 @@ function App() {
 
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/forms/new" element={<FormBuilder />} />
+        <Route path="/forms/:formId/edit" element={<FormBuilder />} />
       </Route>
 
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
