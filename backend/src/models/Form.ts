@@ -59,6 +59,16 @@ const questionSchema = new Schema<IQuestion>({
   },
 });
 
+questionSchema.set("toJSON", {
+  transform: (_doc, ret) => {
+    const result = ret as unknown as Record<string, unknown>;
+    result.id = String(result._id);
+    delete result._id;
+    delete result.__v;
+    return result;
+  },
+});
+
 const formSchema = new Schema<IForm>(
   {
     owner: {
@@ -109,6 +119,16 @@ formSchema.index(
     },
   },
 );
+
+formSchema.set("toJSON", {
+  transform: (_doc, ret) => {
+    const result = ret as unknown as Record<string, unknown>;
+    result.id = String(result._id);
+    delete result._id;
+    delete result.__v;
+    return result;
+  },
+});
 
 const Form = mongoose.model<IForm>("Form", formSchema);
 

@@ -16,6 +16,7 @@ export interface IResponse extends Document {
   createdAt: Date;
   updatedAt: Date;
 }
+
 const answerSchema = new Schema<IResponseAnswer>({
   questionId: {
     type: Schema.Types.ObjectId,
@@ -59,6 +60,15 @@ const responseSchema = new Schema<IResponse>(
 
 responseSchema.index({ form: 1, createdAt: -1 });
 
+responseSchema.set("toJSON", {
+  transform: (_doc, ret) => {
+    const result = ret as unknown as Record<string, unknown>;
+    result.id = String(result._id);
+    delete result._id;
+    delete result.__v;
+    return result;
+  },
+});
 const Response = mongoose.model<IResponse>("Response", responseSchema);
 
 export default Response;
