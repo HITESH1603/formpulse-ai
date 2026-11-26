@@ -39,6 +39,22 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
       });
       return;
     }
+
+    if (error.message === "FORM_CANNOT_BE_PUBLISHED") {
+      res.status(400).json({
+        success: false,
+        message: "A form must have at least one question before publishing",
+      });
+      return;
+    }
+
+    if (error.message === "FORM_CANNOT_BE_CLOSED") {
+      res.status(409).json({
+        success: false,
+        message: "Only published forms can be closed",
+      });
+      return;
+    }
   }
 
   if (
