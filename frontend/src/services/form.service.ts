@@ -1,5 +1,9 @@
 import { apiRequest } from "./api";
-import type { Form, CreateFormInput, UpdateFormInput } from "../types/form";
+import type {
+  Form,
+  CreateFormInput,
+  UpdateFormInput,
+} from "../types/form.types";
 
 interface FormsResponse {
   success: boolean;
@@ -37,6 +41,22 @@ export const updateForm = async (
   const response = await apiRequest<FormResponse>(`/forms/${formId}`, {
     method: "PATCH",
     body: JSON.stringify(input),
+  });
+
+  return response.data;
+};
+
+export const publishForm = async (formId: string): Promise<Form> => {
+  const response = await apiRequest<FormResponse>(`/forms/${formId}/publish`, {
+    method: "POST",
+  });
+
+  return response.data;
+};
+
+export const closeForm = async (formId: string): Promise<Form> => {
+  const response = await apiRequest<FormResponse>(`/forms/${formId}/close`, {
+    method: "POST",
   });
 
   return response.data;

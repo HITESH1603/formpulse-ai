@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import type { Question, QuestionType } from "../types/form";
-import { createForm, getForm, updateForm } from "../services/form";
+import type { Question, QuestionType } from "../types/form.types";
+import { createForm, getForm, updateForm } from "../services/form.service";
 
 function FormBuilder() {
   const navigate = useNavigate();

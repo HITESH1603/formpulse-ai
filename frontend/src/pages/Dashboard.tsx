@@ -1,8 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
-import { deleteForm, getForms } from "../services/form";
-import type { Form } from "../types/form";
+import {
+  closeForm,
+  deleteForm,
+  getForms,
+  publishForm,
+} from "../services/form.service";
+import type { Form } from "../types/form.types";
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -13,6 +18,8 @@ const Dashboard = () => {
   const [error, setError] = useState("");
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [deletingFormId, setDeletingFormId] = useState<string | null>(null);
+  const [updatingFormId, setUpdatingFormId] = useState<string | null>(null);
+  const [copiedFormId, setCopiedFormId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchForms = async () => {
@@ -50,9 +57,7 @@ const Dashboard = () => {
       "Are you sure you want to delete this form and all its responses?",
     );
 
-    if (!confirmed) {
-      return;
-    }
+    if (!confirmed) return;
 
     setError("");
     setDeletingFormId(formId);
@@ -68,6 +73,65 @@ const Dashboard = () => {
       );
     } finally {
       setDeletingFormId(null);
+    }
+  };
+
+  const handlePublish = async (formId: string) => {
+    setError("");
+    setUpdatingFormId(formId);
+
+    try {
+      const updatedForm = await publishForm(formId);
+
+      setForms((previousForms) =>
+        previousForms.map((form) => (form.id === formId ? updatedForm : form)),
+      );
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "Unable to publish form",
+      );
+    } finally {
+      setUpdatingFormId(null);
+    }
+  };
+
+  const handleClose = async (formId: string) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to close this form? People will no longer be able to submit responses.",
+    );
+
+    if (!confirmed) return;
+
+    setError("");
+    setUpdatingFormId(formId);
+
+    try {
+      const updatedForm = await closeForm(formId);
+
+      setForms((previousForms) =>
+        previousForms.map((form) => (form.id === formId ? updatedForm : form)),
+      );
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Unable to close form");
+    } finally {
+      setUpdatingFormId(null);
+    }
+  };
+
+  const handleCopyLink = async (form: Form) => {
+    if (!form.shareId) {
+      setError("Share link is not available for this form.");
+      return;
+    }
+
+    const shareLink = `${window.location.origin}/f/${form.shareId}`;
+
+    try {
+      await navigator.clipboard.writeText(shareLink);
+      setCopiedFormId(form.id);
+      setError("");
+    } catch {
+      setError("Unable to copy the link. Please copy it manually.");
     }
   };
 
@@ -177,7 +241,24 @@ const Dashboard = () => {
                     </span>
                   </div>
 
-                  <div className="mt-6 flex gap-3 border-t border-slate-800 pt-4">
+                  {form.status === "published" && form.shareId && (
+                    <div className="mt-5 rounded-lg border border-slate-700 bg-slate-950 p-3">
+                      <p className="mb-2 text-xs font-medium text-slate-400">
+                        Public sharing link
+                      </p>
+                      <p className="break-all text-sm text-slate-300">
+                        {`${window.location.origin}/f/${form.shareId}`}
+                      </p>
+                      <button
+                        onClick={() => void handleCopyLink(form)}
+                        className="mt-3 rounded-lg border border-indigo-500/40 px-3 py-2 text-sm font-medium text-indigo-400 transition hover:bg-indigo-500/10"
+                      >
+                        {copiedFormId === form.id ? "Copied!" : "Copy link"}
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="mt-6 flex flex-wrap gap-3 border-t border-slate-800 pt-4">
                     <button
                       onClick={() => navigate(`/forms/${form.id}/edit`)}
                       className="flex-1 rounded-lg border border-slate-700 px-4 py-2 text-sm font-medium transition hover:bg-slate-800"
@@ -185,8 +266,30 @@ const Dashboard = () => {
                       Edit
                     </button>
 
+                    {form.status === "draft" && (
+                      <button
+                        onClick={() => void handlePublish(form.id)}
+                        disabled={updatingFormId === form.id}
+                        className="flex-1 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium transition hover:bg-emerald-500 disabled:opacity-50"
+                      >
+                        {updatingFormId === form.id
+                          ? "Publishing..."
+                          : "Publish"}
+                      </button>
+                    )}
+
+                    {form.status === "published" && (
+                      <button
+                        onClick={() => void handleClose(form.id)}
+                        disabled={updatingFormId === form.id}
+                        className="flex-1 rounded-lg border border-amber-500/40 px-4 py-2 text-sm font-medium text-amber-400 transition hover:bg-amber-500/10 disabled:opacity-50"
+                      >
+                        {updatingFormId === form.id ? "Closing..." : "Close"}
+                      </button>
+                    )}
+
                     <button
-                      onClick={() => handleDelete(form.id)}
+                      onClick={() => void handleDelete(form.id)}
                       disabled={deletingFormId === form.id}
                       className="rounded-lg border border-red-500/30 px-4 py-2 text-sm font-medium text-red-400 transition hover:bg-red-500/10 disabled:opacity-50"
                     >
