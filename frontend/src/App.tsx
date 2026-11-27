@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import FormBuilder from "./pages/FormBuilder";
 import PublicForm from "./pages/PublicForm";
+import Results from "./pages/Results";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/forms/new" element={<FormBuilder />} />
         <Route path="/forms/:formId/edit" element={<FormBuilder />} />
+        <Route path="/forms/:formId/results" element={<Results />} />
       </Route>
 
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
