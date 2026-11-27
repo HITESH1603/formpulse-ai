@@ -349,7 +349,7 @@ const Results = () => {
                     </thead>
                     <tbody className="divide-y divide-slate-800">
                       {responses.map((response) => (
-                        <tr key={response._id}>
+                        <tr key={response.id}>
                           <td className="whitespace-nowrap px-5 py-4 text-slate-400">
                             {new Date(response.createdAt).toLocaleString()}
                           </td>

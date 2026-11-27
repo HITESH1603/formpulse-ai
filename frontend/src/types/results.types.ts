@@ -24,7 +24,7 @@ export interface FormAnalytics {
 }
 
 export interface FormResponse {
-  _id: string;
+  id: string;
   createdAt: string;
   answers: {
     questionId: string;
