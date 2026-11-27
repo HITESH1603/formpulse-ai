@@ -288,6 +288,16 @@ const Dashboard = () => {
                       </button>
                     )}
 
+                    {form.status === "closed" && (
+                      <button
+                        onClick={() => void handlePublish(form.id)}
+                        disabled={updatingFormId === form.id}
+                        className="flex-1 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium transition hover:bg-emerald-500 disabled:opacity-50"
+                      >
+                        {updatingFormId === form.id ? "Reopening..." : "Reopen"}
+                      </button>
+                    )}
+
                     <button
                       onClick={() => void handleDelete(form.id)}
                       disabled={deletingFormId === form.id}

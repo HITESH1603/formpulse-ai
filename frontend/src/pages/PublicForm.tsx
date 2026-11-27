@@ -92,7 +92,8 @@ const PublicForm = () => {
       const answer = answers[question.id];
 
       if (!question.required) return false;
-      if (answer === undefined || answer === "") return true;
+      if (answer === undefined) return true;
+      if (typeof answer === "string" && !answer.trim()) return true;
       if (Array.isArray(answer) && answer.length === 0) return true;
 
       return false;
@@ -140,6 +141,12 @@ const PublicForm = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSubmitAnother = () => {
+    setAnswers({});
+    setError("");
+    setSubmitted(false);
   };
 
   if (isInvalidLink) {
@@ -193,6 +200,13 @@ const PublicForm = () => {
           <p className="mt-3 text-slate-400">
             Thank you for taking the time to complete this form.
           </p>
+          <button
+            type="button"
+            onClick={handleSubmitAnother}
+            className="mt-6 rounded-lg bg-indigo-600 px-5 py-3 font-semibold text-white transition hover:bg-indigo-500"
+          >
+            Submit another response
+          </button>
         </div>
       </main>
     );
